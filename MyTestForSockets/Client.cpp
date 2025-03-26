@@ -1,44 +1,42 @@
 #include <iostream>
+#include <cstring>
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <unistd.h>
-#include <cstring>
 
-#define SERVER_IP "127.0.0.1"
-#define PORT 8080
+#define SERVER_IP "127.0.0.1"  
+#define PORT 8080              
 
 int main() {
-    int clientSocket;
-    struct sockaddr_in serverAddr;
-    char buffer[1024] = "Hello from client!";
-
-    clientSocket = socket(AF_INET, SOCK_STREAM, 0);
-    if (clientSocket < 0) {
+    int client_fd = socket(AF_INET, SOCK_STREAM, 0);
+    if (client_fd == -1) {
         std::cerr << "Socket creation failed" << std::endl;
-        return 1;
+        return -1;
     }
 
-    serverAddr.sin_family = AF_INET;
-    serverAddr.sin_port = htons(PORT);
-    serverAddr.sin_addr.s_addr = inet_addr(SERVER_IP);
+    struct sockaddr_in server_addr;
+    server_addr.sin_family = AF_INET;
+    server_addr.sin_port = htons(PORT);
+    server_addr.sin_addr.s_addr = inet_addr(SERVER_IP);
 
-    if (connect(clientSocket, (struct sockaddr*)&serverAddr, sizeof(serverAddr)) < 0) {
+    if (connect(client_fd, (struct sockaddr*)&server_addr, sizeof(server_addr)) < 0) {
         std::cerr << "Connection failed" << std::endl;
-        close(clientSocket);
-        return 1;
+        close(client_fd);
+        return -1;
     }
 
-    send(clientSocket, buffer, strlen(buffer), 0);
+    std::cout << "Connected to server. Type messages to send:\n";
 
-    int recvSize = recv(clientSocket, buffer, sizeof(buffer), 0);
-    if (recvSize < 0) {
-        std::cerr << "Receive failed" << std::endl;
-    } else {
-        buffer[recvSize] = '\0';
-        std::cout << "Message from server: " << buffer << std::endl;
+    std::string input;
+    while (true) {
+        std::cout << "> ";
+        std::getline(std::cin, input);
+        if (input == "exit") break;
+        send(client_fd, input.c_str(), input.length(), 0);
     }
 
-    close(clientSocket);
+    close(client_fd);
     return 0;
 }
+
 

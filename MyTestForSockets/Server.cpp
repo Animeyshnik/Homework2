@@ -1,62 +1,59 @@
 #include <iostream>
+#include <cstring>
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <unistd.h>
-#include <cstring>
 
-#define PORT 8080
+#define PORT 8080  
 
 int main() {
-    int serverSocket, clientSocket;
-    struct sockaddr_in serverAddr, clientAddr;
-    socklen_t addrLen = sizeof(clientAddr);
-    char buffer[1024];
-
-    serverSocket = socket(AF_INET, SOCK_STREAM, 0);
-    if (serverSocket < 0) {
+    int server_fd = socket(AF_INET, SOCK_STREAM, 0);
+    if (server_fd == -1) {
         std::cerr << "Socket creation failed" << std::endl;
-        return 1;
+        return -1;
     }
 
-    serverAddr.sin_family = AF_INET;
-    serverAddr.sin_addr.s_addr = INADDR_ANY;
-    serverAddr.sin_port = htons(PORT);
+    struct sockaddr_in address;
+    address.sin_family = AF_INET;
+    address.sin_addr.s_addr = INADDR_ANY;
+    address.sin_port = htons(PORT);
 
-    if (bind(serverSocket, (struct sockaddr*)&serverAddr, sizeof(serverAddr)) < 0) {
+    if (bind(server_fd, (struct sockaddr*)&address, sizeof(address)) < 0) {
         std::cerr << "Bind failed" << std::endl;
-        close(serverSocket);
-        return 1;
+        close(server_fd);
+        return -1;
     }
 
-    if (listen(serverSocket, 3) < 0) {
+    if (listen(server_fd, 3) < 0) {
         std::cerr << "Listen failed" << std::endl;
-        close(serverSocket);
-        return 1;
+        close(server_fd);
+        return -1;
     }
 
     std::cout << "Waiting for connections..." << std::endl;
 
-    clientSocket = accept(serverSocket, (struct sockaddr*)&clientAddr, &addrLen);
-    if (clientSocket < 0) {
+    int client_fd = accept(server_fd, nullptr, nullptr);
+    if (client_fd < 0) {
         std::cerr << "Accept failed" << std::endl;
-        close(serverSocket);
-        return 1;
+        close(server_fd);
+        return -1;
     }
 
-    std::cout << "Client connected!" << std::endl;
+    std::cout << "Client connected! Waiting for messages...\n";
 
-    int recvSize = recv(clientSocket, buffer, sizeof(buffer), 0);
-    if (recvSize < 0) {
-        std::cerr << "Receive failed" << std::endl;
-    } else {
-        buffer[recvSize] = '\0';
-        std::cout << "Message from client: " << buffer << std::endl;
+    char buffer[1024] = {0};
+    while (true) {
+        memset(buffer, 0, sizeof(buffer));
+        int bytes_received = recv(client_fd, buffer, sizeof(buffer) - 1, 0);
+        if (bytes_received <= 0) {
+            std::cout << "Client disconnected.\n";
+            break;
+        }
+        std::cout << "Client: " << buffer << std::endl;
     }
 
-    send(clientSocket, "Hello from server!", 18, 0);
-
-    close(clientSocket);
-    close(serverSocket);
+    close(client_fd);
+    close(server_fd);
     return 0;
 }
 
