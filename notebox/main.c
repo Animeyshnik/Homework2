@@ -134,7 +134,7 @@ int main() {
         printf("4. Exit\n");
         printf("Enter your choice: ");
         scanf("%d", &choice);
-        while (getchar() != '\n'); // clear input buffer
+        while (getchar() != '\n'); 
 
         switch (choice) {
             case 1: view_notes(); break;

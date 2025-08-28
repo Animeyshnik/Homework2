@@ -1,0 +1,37 @@
+1   set hlsearch
+  1 set relativenumber
+  2 set nocompatible
+  3 set nu
+  4 set expandtab
+  5 filetype on
+  6 syntax on
+  7 set history=1000
+  8 
+  9 let data_dir = has('nvim') ? stdpath('data') . '/site' : '~/.vim'
+ 10 if empty(glob(data_dir . '/autoload/plug.vim'))
+ 11   silent execute '!curl -fLo '.data_dir.'/autoload/plug.vim --create-dirs  https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim'
+ 12   autocmd VimEnter * PlugInstall --sync | source $MYVIMRC
+ 13 endif
+ 14 
+ 15 
+ 16 "Plugins
+ 17 
+ 18 call plug#begin()
+ 19 Plug 'octol/vim-cpp-enhanced-highlight'
+ 20 Plug 'vim-airline/vim-airline'
+ 21 Plug 'scrooloose/nerdtree'
+ 22 call plug#end()
+ 23 
+ 24 
+ 25 "key Mapping
+ 26 
+ 27 
+ 28 imap <F2> <Esc>:w<CR>
+ 29 map <F2> <Esc>:w<CR>
+ 30 imap <F3> <Esc>:q!<CR>
+ 31 map <F3> <Esc>:q!<CR>
+ 32 imap <F4> <Esc>:wq<CR>
+ 33 map <F4> <Esc>:wq<CR>
+ 34 imap <silent> <F5> <Esc>:noh<CR>
+ 35 map <F5> <Esc>:noh<CR>
+ 36 map <C-p> :NERDTreeToggle<CR>
